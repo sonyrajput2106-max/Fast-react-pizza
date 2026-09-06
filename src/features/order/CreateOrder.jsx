@@ -1,11 +1,9 @@
-import { Form, redirect, useActionData } from "react-router-dom";
+import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
 import createOrder from "../../services/apiRestaurant";
-import { useNavigation } from "react-router-dom";
 
-// https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
   /^\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/.test(
-    str,
+    str
   );
 
 const fakeCart = [
@@ -33,12 +31,12 @@ const fakeCart = [
 ];
 
 function CreateOrder() {
-  const navigate = useNavigation();
-  const isSubmitting = navigation().state === "submitting";
+  const navigation = useNavigation();
 
-  const fromErrors = useActionData();
+  const isSubmitting = navigation.state === "submitting";
 
-  // const [withPriority, setWithPriority] = useState(false);
+  const formErrors = useActionData();
+
   const cart = fakeCart;
 
   return (
@@ -53,14 +51,17 @@ function CreateOrder() {
 
         <div>
           <label>Phone number</label>
+
           <div>
             <input type="tel" name="phone" required />
           </div>
-          {fromErrors?.phone && <p>{fromErrors.phone}</p>}
+
+          {formErrors?.phone && <p>{formErrors.phone}</p>}
         </div>
 
         <div>
           <label>Address</label>
+
           <div>
             <input type="text" name="address" required />
           </div>
@@ -71,15 +72,21 @@ function CreateOrder() {
             type="checkbox"
             name="priority"
             id="priority"
-            // value={withPriority}
-            // onChange={(e) => setWithPriority(e.target.checked)}
           />
-          <label htmlFor="priority">Want to yo give your order priority?</label>
+
+          <label htmlFor="priority">
+            Want to give your order priority?
+          </label>
         </div>
 
         <div>
-          <input type="hidden" name="cart" value={JSON.stringify(cart)} />
-          <button disabled={isSubmitting}>
+          <input
+            type="hidden"
+            name="cart"
+            value={JSON.stringify(cart)}
+          />
+
+          <button disabled={isSubmitting} className="bg-yellow-400 uppercase font-semibold text-stone-800 py-3 px-4 inline-block tracking-wide rounded-full hover:bg-yellow-300 transition-colors duration-300 focus:outline-none focus:ring focus:ring-yellow-300 focus:bg-yellow-300 focus:ring-offset-2 disabled:cursor-not-allowed">
             {isSubmitting ? "Placing order..." : "Order now"}
           </button>
         </div>
@@ -90,6 +97,7 @@ function CreateOrder() {
 
 export async function action({ request }) {
   const formData = await request.formData();
+
   const data = Object.fromEntries(formData);
 
   const order = {
@@ -99,16 +107,19 @@ export async function action({ request }) {
   };
 
   const errors = {};
-  if (!isValidPhone(order.phone))
+
+  if (!isValidPhone(order.phone)) {
     errors.phone = "Please give a valid phone number";
+  }
 
   if (Object.keys(errors).length > 0) {
     return errors;
   }
 
-  const newOrder = await createOrder(order);
+  // const newOrder = await createOrder(order);
 
-  return redirect(`/order/${newOrder.id}`);
+  // return redirect(`/order/${newOrder.id}`);
+  return null;
 }
 
 export default CreateOrder;
